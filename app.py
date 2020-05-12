@@ -13,9 +13,12 @@ from pages import (
 )
 
 app = dash.Dash(
-    __name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}]
+    __name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}],
+    url_base_pathname='/resilience-equity/',
 )
 server = app.server
+
+app.title = 'Embedding equity into resilience'
 
 # Describe the layout/ UI of the app
 app.layout = html.Div(
@@ -49,4 +52,5 @@ def display_page(pathname):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    # app.run_server(debug=True)
+    app.run_server(port=9006)
