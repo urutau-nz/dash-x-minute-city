@@ -28,17 +28,17 @@ app.layout = html.Div(
 # Update page
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def display_page(pathname):
-    if pathname == "/resilience":
+    if pathname == "/resilience-equity/resilience":
         return resilience.create_layout(app)
-    elif pathname == "/equity":
+    elif pathname == "/resilience-equity/equity":
         return equity.create_layout(app)
-    elif pathname == "/recover":
+    elif pathname == "/resilience-equity/recover":
         return recover.create_layout(app)
-    elif pathname == "/transform":
+    elif pathname == "/resilience-equity/transform":
         return transform.create_layout(app)
-    elif pathname == "/soon":
+    elif pathname == "/resilience-equity/soon":
         return comingsoon.create_layout(app)
-    elif pathname == "/all":
+    elif pathname == "/resilience-equity/all":
         return (
             overview.create_layout(app),
             resilience.create_layout(app),
