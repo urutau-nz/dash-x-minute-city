@@ -6,3 +6,5 @@ venv/
 .vscode/settings.json
 __pycache__
 *ini
+
+.mapbox_token
