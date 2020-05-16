@@ -34,13 +34,13 @@ def create_layout(app):
                                 [
                                     html.A(
                                         html.Button("Overview", id="learn-more-button"),
-                                        href="/resilience-equity/",
+                                        href="./",
                                     ),
                                 ],
                                 className="twelve columns",
                             ),
                         ],
-                        className="row",
+                        className="row buttons",
                         style={"margin-bottom": "35px"},
                     ),
                     # Row 3

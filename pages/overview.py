@@ -67,25 +67,25 @@ def create_layout(app):
                                 [
                                     html.A(
                                         html.Button("Resilience & Access", id="learn-more-button"),
-                                        href="/soon",
+                                        href="./soon",
                                     ),
                                     html.A(
                                         html.Button("Measuring Equity", id="learn-more-button"),
-                                        href="/soon",
+                                        href="./soon",
                                     ),
                                     html.A(
                                         html.Button("Recover", id="learn-more-button"),
-                                        href="/soon",
+                                        href="./soon",
                                     ),
                                     html.A(
                                         html.Button("Transformation", id="learn-more-button"),
-                                        href="/soon",
+                                        href="./soon",
                                     ),
                                 ],
                                 className="twelve columns",
                             ),
                         ],
-                        className="row",
+                        className="row buttons",
                         style={"margin-bottom": "35px"},
                     ),
                 ],
