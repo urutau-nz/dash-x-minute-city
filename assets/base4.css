@@ -10,3 +10,23 @@ body {
 .buttons {
   text-align: center;
 }
+
+.rc-slider {
+  margin-bottom: 20px;
+}
+
+#map-container .graph-title, #ecdf-container .graph-title, #header-container .graph-title {
+    font-family: 'Open Sans', sans-serif;
+    text-transform: uppercase;
+    font-weight: 200;
+    color: white;
+}
+
+#ecdf, #recovery {
+  width: 100%;
+  height: 30vh;
+}
+
+#ecdf *, #recovery * {
+        font-size: 1rem;
+    }

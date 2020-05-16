@@ -49,6 +49,9 @@ def get_header(app):
     )
     return header
 
+def build_graph_title(title):
+    return html.P(className="graph-title", children=title)
+
 
 def get_menu():
     menu = html.Div(

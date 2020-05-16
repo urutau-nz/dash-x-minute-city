@@ -67,7 +67,7 @@ def create_layout(app):
                                 [
                                     html.A(
                                         html.Button("Resilience & Access", id="learn-more-button"),
-                                        href="./soon",
+                                        href="./resilience",
                                     ),
                                     html.A(
                                         html.Button("Measuring Equity", id="learn-more-button"),

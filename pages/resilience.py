@@ -1,21 +1,299 @@
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
-from utils import Header, make_dash_table
+from utils import Header, make_dash_table, build_graph_title
 import pandas as pd
-import pathlib
 
-# get relative data folder
-PATH = pathlib.Path(__file__).parent
-DATA_PATH = PATH.joinpath("../data").resolve()
+import numpy as np
+from urllib.request import urlopen
+import json
+import geopandas as gpd
+import datetime
+
+amenities = ['supermarket','gas_station']
+amenity_names = {'supermarket':'Supermarket','gas_station':'Service Station'}
+
+# mapbox token
+mapbox_access_token = open(".mapbox_token").read()
+
+# Load data
+df_dist = pd.read_csv('./data/distance_to_nearest.csv',dtype={"geoid10": str})
+df_dist['distance'] = df_dist['distance']/1000
+df_dist['distance'] = df_dist['distance'].replace(np.inf, 999)
+
+destinations = pd.read_csv('./data/destinations.csv')
+
+df_recovery = pd.read_csv('./data/recovery.csv')
+
+# days since land landfall
+days = np.unique(df_recovery['day'])
+
+# Assign color to legend
+colors = ['#EA5138','#E4AE36','#1F386B','#507332']
+colormap = {}
+for ind, amenity in enumerate(amenities):
+    colormap[amenity] = colors[ind]
+
+pl_deep=[[0.0, 'rgb(253, 253, 204)'],
+         [0.1, 'rgb(201, 235, 177)'],
+         [0.2, 'rgb(145, 216, 163)'],
+         [0.3, 'rgb(102, 194, 163)'],
+         [0.4, 'rgb(81, 168, 162)'],
+         [0.5, 'rgb(72, 141, 157)'],
+         [0.6, 'rgb(64, 117, 152)'],
+         [0.7, 'rgb(61, 90, 146)'],
+         [0.8, 'rgb(65, 64, 123)'],
+         [0.9, 'rgb(55, 44, 80)'],
+         [1.0, 'rgb(39, 26, 44)']]
 
 
-df_current_prices = pd.read_csv(DATA_PATH.joinpath("df_current_prices.csv"))
-df_hist_prices = pd.read_csv(DATA_PATH.joinpath("df_hist_prices.csv"))
-df_avg_returns = pd.read_csv(DATA_PATH.joinpath("df_avg_returns.csv"))
-df_after_tax = pd.read_csv(DATA_PATH.joinpath("df_after_tax.csv"))
-df_recent_returns = pd.read_csv(DATA_PATH.joinpath("df_recent_returns.csv"))
-df_graph = pd.read_csv(DATA_PATH.joinpath("df_graph.csv"))
+def generate_ecdf_plot(amenity_select, dff_dist, x_range=None):
+    """
+    :param amenity_select: the amenity of interest.
+    :return: Figure object
+    """
+    amenity = amenity_select
+    if x_range is None:
+        x_range = [dff_dist.distance.min(), dff_dist.distance.max()]
+
+
+    layout = dict(
+        xaxis=dict(
+            title="distance (km)".format(amenity_names[amenity]).upper(),
+            range=(0,15),
+            fixedrange=True,
+            titlefont=dict(size=12)
+            ),
+        yaxis=dict(
+            title="% of residents".upper(),
+            range=(0,100),
+            fixedrange=True,
+            titlefont=dict(size=12)
+            ),
+        font=dict(size=13),
+        dragmode="select",
+        paper_bgcolor = 'rgba(255,255,255,1)',
+		plot_bgcolor = 'rgba(0,0,0,0)',
+        bargap=0.05,
+        showlegend=False,
+        margin=dict(l=40, r=0, t=10, b=30),
+        # height= 300
+
+    )
+    data = []
+    # add the cdf for that amenity
+    counts, bin_edges = np.histogram(dff_dist.distance, bins=100, density = True)#, weights=df.W.values)
+    dx = bin_edges[1] - bin_edges[0]
+    new_trace = go.Scattergl(
+            x=bin_edges, y=np.cumsum(counts)*dx*100,
+            opacity=1,
+            line=dict(color=colormap[amenity],),
+            text=[amenity_names[amenity].lower()]*len(dff_dist),
+            hovertemplate = "%{y:.0f}% of residents live within %{x:.1f}km of a %{text} <br>" + "<extra></extra>",
+            hoverlabel = dict(font_size=20),
+            )
+
+    data.append(new_trace)
+
+    # histogram
+    multiplier = 300 if amenity=='supermarket' else 150
+    counts, bin_edges = np.histogram(dff_dist.distance, bins=25, density=True)#, weights=df.W.values)
+    opacity = []
+    for i in bin_edges:
+        if i >= x_range[0] and i <= x_range[1]:
+            opacity.append(0.6)
+        else:
+            opacity.append(0.1)
+    new_trace = go.Bar(
+            x=bin_edges, y=counts*multiplier,
+            marker_opacity=opacity,
+            marker_color=colormap[amenity],
+            hoverinfo="skip", hovertemplate="",)
+    data.append(new_trace)
+
+
+    # add the cdf for that amenity
+    dff_dist = df_dist[(df_dist.day==days[0]) & (df_dist.service==amenity)]
+    counts, bin_edges = np.histogram(dff_dist.distance, bins=100, density = True)#, weights=df.W.values)
+    dx = bin_edges[1] - bin_edges[0]
+    new_trace = go.Scattergl(
+            x=bin_edges, y=np.cumsum(counts)*dx*100,
+            opacity=0.5,
+            line=dict(color=colormap[amenity]),
+            text=[amenity_names[amenity].lower()]*len(dff_dist),
+            # hovertemplate = "%{y:.2f}% of residents live within %{x:.1f}km of a %{text} <br>" + "<extra></extra>",
+            # hoverlabel = dict(font_size=20),
+            hoverinfo="skip", hovertemplate="",
+            )
+
+    data.append(new_trace)
+
+
+    return {"data": data, "layout": layout}
+
+
+
+def recovery_plot(amenity_select, dff_recovery, day):
+    """
+    :param amenity_select: the amenity of interest.
+    :return: Figure object
+    """
+    amenity = amenity_select
+    if amenity == 'supermarket':
+        ylimit = 15
+    else:
+        ylimit = 8
+
+    layout = dict(
+        xaxis=dict(
+            title="days since landfall".upper(),
+            zeroline=False,
+            fixedrange=True,
+            titlefont=dict(size=12)
+            ),
+        yaxis=dict(
+            title="Distance (km)".format(amenity_names[amenity]).upper(),
+            zeroline=False,
+            range=(ylimit,0),
+            fixedrange=True,
+            titlefont=dict(size=12)
+            ),
+        font=dict(size=13),
+        paper_bgcolor = 'rgba(255,255,255,1)',
+		plot_bgcolor = 'rgba(0,0,0,0)',
+        showlegend=False,
+        margin=dict(l=40, r=0, t=10, b=30),
+    )
+
+    data = []
+    # add the average
+    new_trace = go.Scattergl(
+            x=dff_recovery.day, y=dff_recovery['average']/1000,
+            opacity=1,
+            line=dict(color=colormap[amenity],),
+            text=[amenity_names[amenity].lower()]*len(dff_recovery),
+            hovertemplate = "The average distance to the nearest %{text} was %{y:.1f}km<br>" + "<extra></extra>",
+            hoverlabel = dict(font_size=20),
+            )
+    data.append(new_trace)
+    # add the percentiles
+    new_trace = go.Scattergl(
+            x=dff_recovery.day, y=dff_recovery['p5']/1000,
+            opacity=.50,
+            line=dict(color=colormap[amenity],dash='dash'),
+            text=dff_recovery.service,
+            hovertemplate = "5th % = %{y:.1f}km<br>" + "<extra></extra>",
+            hoverlabel = dict(font_size=20),
+            )
+    data.append(new_trace)
+    # add the percentiles
+    new_trace = go.Scattergl(
+            x=dff_recovery.day, y=dff_recovery['p95']/1000,
+            opacity=.50,
+            line=dict(color=colormap[amenity],dash='dash'),
+            text=dff_recovery.service,
+            hovertemplate = "95th % = %{y:.1f}km<br>" + "<extra></extra>",
+            hoverlabel = dict(font_size=20),
+            )
+    data.append(new_trace)
+
+    # add date line
+    new_trace = go.Scattergl(
+            x=[day, day],
+            y=[0,ylimit+2],
+            opacity=.50,
+            mode='lines',
+            line=dict(color='black',dash='dash'),
+            hoverinfo="skip", hovertemplate="",
+            )
+    data.append(new_trace)
+
+    return {"data": data, "layout": layout}
+
+
+
+def generate_map(amenity, dff_dist, dff_dest, x_range=None):
+    """
+    Generate map showing the distance to services and the locations of them
+    :param amenity: the service of interest.
+    :param dff_dest: the lat and lons of the service.
+    :param x_range: distance range to highlight.
+    :return: Plotly figure object.
+    """
+    # print(dff_dist['geoid10'].tolist())
+    dff_dist = dff_dist.reset_index()
+
+
+    layout = go.Layout(
+        clickmode="none",
+        dragmode="zoom",
+        showlegend=True,
+        autosize=True,
+        hovermode="closest",
+        margin=dict(l=0, r=0, t=0, b=0),
+        # height= 561,
+        mapbox=go.layout.Mapbox(
+            accesstoken=mapbox_access_token,
+            bearing=0,
+            center=go.layout.mapbox.Center(lat = 34.245580, lon = -77.872072),
+            pitch=0,
+            zoom=10.5,
+            style="basic", #"dark", #
+        ),
+        legend=dict(
+            bgcolor="#1f2c56",
+            orientation="h",
+            font=dict(color="white"),
+            x=0,
+            y=0,
+            yanchor="bottom",
+        ),
+    )
+
+    if x_range:
+        # get the indices of the values within the specified range
+        idx = dff_dist.index[dff_dist['distance'].between(x_range[0],x_range[1], inclusive=True)].tolist()
+    else:
+        idx = dff_dist.index.tolist()
+
+    data = []
+    # choropleth map showing the distance at the block level
+    data.append(go.Choroplethmapbox(
+        geojson = 'https://raw.githubusercontent.com/urutau-nz/dash-recovery-florence/master/data/block.geojson',
+        locations = dff_dist['geoid10'].tolist(),
+        z = dff_dist['distance'].tolist(),
+        colorscale = pl_deep,
+        colorbar = dict(thickness=20, ticklen=3), zmin=0, zmax=5,
+        marker_line_width=0, marker_opacity=0.7,
+        visible=True,
+        hovertemplate="Distance: %{z:.2f}km<br>" +
+                        "<extra></extra>",
+        selectedpoints=idx,
+    ))
+
+    # scatterplot of the amenity locations
+    point_color = [colormap[amenity] if i==True else 'black' for i in dff_dest['operational']]
+
+    data.append(go.Scattermapbox(
+        lat=dff_dest["lat"],
+        lon=dff_dest["lon"],
+        mode="markers",
+        marker={"color": point_color, "size": 9},
+        # marker={"color": dff_dest['operational'], "size": 9},
+        name=amenity_names[amenity],
+        hoverinfo="skip", hovertemplate="",
+    ))
+
+    return {"data": data, "layout": layout}
+
+
+
+
+
+
+
+
 
 
 
@@ -80,7 +358,7 @@ def create_layout(app):
                                         ),
                                     " we made the case for ''access to essential services'' being considered as a \
                                     pillar of community resilience.\
-                                    This is a natural outcome based on the works of many in the planning and resilience communities."
+                                    This proposal is based on the works of many in the planning and resilience communities."
                                     ],
                                     ),
                                     html.H6(
@@ -88,7 +366,8 @@ def create_layout(app):
                                     ),
                                     html.P(
                                         ["\
-                                    What am i referring to?"
+                                    In addition to water, power, sanitation, and communications, communities require\
+                                    access to everyday amenities including food, education, health care, and culture (Winter, 1997)."
                                     ],
                                     ),
                                     html.H6(
@@ -96,10 +375,10 @@ def create_layout(app):
                                     ),
                                     html.P(
                                         ["\
-                                    For example, Talen () points out that access to services is of utmost importance to planners.\
-                                    We know that communities without access to everyday services will simply collapse.\
-                                    Further, we know that access, especially equitable access, is critical for community cohesion and social capital.\
-                                    These are characteristics integral to community resilience indicators such as those proposed by Cutter.."
+                                    For example, Talen (1998) points out that the equitable distribution of resources, that is access to services, is of utmost importance to planners.\
+                                    We have seen that communities without access to everyday services will simply collapse (Contreras, 2017).\
+                                    Further, we know that access, especially equitable access, is critical for community cohesion and social capital (Dempsey, 2011).\
+                                    These are characteristics integral to community resilience indicators such as those proposed by Cutter (2014) among others."
                                     ],
                                     ),
                                     html.H6(
@@ -108,7 +387,7 @@ def create_layout(app):
                                     html.P(
                                         ["\
                                     Thinking about resilience in this manner, neatly ties in the works of the engineering resilience communities,\
-                                    who have focused primarily on infrastructure functionality.\
+                                    who have focused primarily on infrastructure functionality (e.g., Bruneau (2003)).\
                                     This infrastructure has been the focus because of its traditional critical importance in supporting\
                                     everyday services.\
                                     However, if we focus on the outcomes that matter for communities, we can explore interventions that can\
@@ -148,110 +427,6 @@ def create_layout(app):
                         ],
                         className="row ",
                     ),
-                    # Row 2
-                    html.Div(
-                        [
-                            html.Div(
-                                [
-                                    html.H6("Performance", className="subtitle padded"),
-                                    dcc.Graph(
-                                        id="graph-4",
-                                        figure={
-                                            "data": [
-                                                go.Scatter(
-                                                    x=df_graph["Date"],
-                                                    y=df_graph["Calibre Index Fund"],
-                                                    line={"color": "#97151c"},
-                                                    mode="lines",
-                                                    name="Calibre Index Fund",
-                                                ),
-                                                go.Scatter(
-                                                    x=df_graph["Date"],
-                                                    y=df_graph[
-                                                        "MSCI EAFE Index Fund (ETF)"
-                                                    ],
-                                                    line={"color": "#b5b5b5"},
-                                                    mode="lines",
-                                                    name="MSCI EAFE Index Fund (ETF)",
-                                                ),
-                                            ],
-                                            "layout": go.Layout(
-                                                autosize=True,
-                                                width=700,
-                                                height=200,
-                                                font={"family": "Raleway", "size": 10},
-                                                margin={
-                                                    "r": 30,
-                                                    "t": 30,
-                                                    "b": 30,
-                                                    "l": 30,
-                                                },
-                                                showlegend=True,
-                                                titlefont={
-                                                    "family": "Raleway",
-                                                    "size": 10,
-                                                },
-                                                xaxis={
-                                                    "autorange": True,
-                                                    "range": [
-                                                        "2007-12-31",
-                                                        "2018-03-06",
-                                                    ],
-                                                    "rangeselector": {
-                                                        "buttons": [
-                                                            {
-                                                                "count": 1,
-                                                                "label": "1Y",
-                                                                "step": "year",
-                                                                "stepmode": "backward",
-                                                            },
-                                                            {
-                                                                "count": 3,
-                                                                "label": "3Y",
-                                                                "step": "year",
-                                                                "stepmode": "backward",
-                                                            },
-                                                            {
-                                                                "count": 5,
-                                                                "label": "5Y",
-                                                                "step": "year",
-                                                            },
-                                                            {
-                                                                "count": 10,
-                                                                "label": "10Y",
-                                                                "step": "year",
-                                                                "stepmode": "backward",
-                                                            },
-                                                            {
-                                                                "label": "All",
-                                                                "step": "all",
-                                                            },
-                                                        ]
-                                                    },
-                                                    "showline": True,
-                                                    "type": "date",
-                                                    "zeroline": False,
-                                                },
-                                                yaxis={
-                                                    "autorange": True,
-                                                    "range": [
-                                                        18.6880162434,
-                                                        278.431996757,
-                                                    ],
-                                                    "showline": True,
-                                                    "type": "linear",
-                                                    "zeroline": False,
-                                                },
-                                            ),
-                                        },
-                                        config={"displayModeBar": False},
-                                    ),
-                                ],
-                                className="twelve columns",
-                            )
-                        ],
-                        className="row ",
-                    ),
                     # Row 4
                     html.Div(
                         [
@@ -259,21 +434,116 @@ def create_layout(app):
                                 [
                                     html.H6(
                                         [
-                                            "After-tax returns--updated quarterly as of 12/31/2017"
+                                            "Example of Wilmington, NC and Hurricane Florence"
                                         ],
                                         className="subtitle padded",
                                     ),
+                                    html.P(
+                                        ["\
+                                    Below is an interactive example of assessing access over\
+                                    the course of a hurricane. The map enables you to explore\
+                                    how access is spatially distributed. You can highlight areas of\
+                                    deprivation by dragging to select a range of values on the histogram.\
+                                    The resilience curve shows how quickly access was restored; the resilience\
+                                    curve includes the 5th and 95th percentiles so that we don't\
+                                    ignore the people who are worst-off.\
+                                    In the next page, we propose an alternative way to capture these\
+                                    people."
+                                    ],
+                                    ),
                                     html.Div(
                                         [
-                                            html.Table(
-                                                make_dash_table(df_after_tax),
-                                                className="tiny-header",
-                                            )
+                                            dcc.Dropdown(
+                                                id="amenity-select",
+                                                options=[
+                                                    {"label": amenity_names[i].upper(), "value": i}
+                                                    for i in amenities
+                                                ],
+                                                value=amenities[0],
+                                            ),
                                         ],
-                                        style={"overflow-x": "auto"},
+                                        # style={"overflow-x": "auto"},
                                     ),
                                 ],
                                 className=" twelve columns",
+                            )
+                        ],
+                        className="row ",
+                    ),
+                    # Row 2
+                    html.Div(
+                        [
+                            html.Div(
+
+                                id="map-container",
+                                    children=[
+                                        html.H6("What is the state of people's access to services?"),
+                                        # build_graph_title("How has people's access to services changed?"),
+                                        dcc.Graph(
+                                            id="map",
+                                            figure={
+                                                "layout": {
+                                                    # "paper_bgcolor": "#192444",
+                                                    # "plot_bgcolor": "#192444",
+                                                }
+                                            },
+                                            config={"scrollZoom": True, "displayModeBar": True,
+                                                    "modeBarButtonsToRemove":["lasso2d","select2d"],
+                                            },
+                                        ),
+                                    ],
+                                className="twelve columns",
+                            )
+                        ],
+                        className="row ",
+                    ),
+                    # Row 2
+                    html.Div(
+                        [
+                            html.Div(
+                                    id="ecdf-container",
+                                    children=[
+                                        html.H6("Select the day since hurricane landfall"),
+                                        dcc.Slider(
+                                            id="day-select",
+                                            min=np.min(days),
+                                            max=np.max(days),
+                                            # step=2,
+                                            marks={i: str(i) for i in range(np.min(days),np.max(days),1)},
+                                            value=-2,
+                                        ),
+                                    ],
+                                className="twelve columns",
+                            )
+                        ],
+                        className="row ",
+                    ),
+                    # # Row 4
+                    html.Div(
+                        [
+                            html.Div(
+                                id="ecdf-container",
+                                children=[
+                                    html.H6("Select a distance range to identify those areas"),
+                                    dcc.Graph(id="ecdf",
+                                    config={"scrollZoom": True, "displayModeBar": True,
+                                            "modeBarButtonsToRemove":['toggleSpikelines','hoverCompareCartesian',
+                                            'pan',"zoomIn2d", "zoomOut2d","lasso2d","select2d"],
+                                    },
+                                ),
+                                ],
+                                className=" six columns",
+                            ),
+                            html.Div(
+                                [
+                                    html.H6("Resilience curve"),
+                                    dcc.Graph(id="recovery",
+                                            config={"scrollZoom": True, "displayModeBar": True,
+                                            "modeBarButtonsToRemove":['toggleSpikelines','hoverCompareCartesian'],
+                                    },
+                                ),
+                                ],
+                                className=" six columns",
                             )
                         ],
                         className="row ",
@@ -284,12 +554,13 @@ def create_layout(app):
                             html.Div(
                                 [
                                     html.H6(
-                                        ["Recent investment returns"],
+                                        ["Further information"],
                                         className="subtitle padded",
                                     ),
-                                    html.Table(
-                                        make_dash_table(df_recent_returns),
-                                        className="tiny-header",
+                                    html.P(
+                                        ["For more information and the reference list, see ",
+                                        html.A("Logan & Guikema (2020)", href="https://onlinelibrary.wiley.com/doi/full/10.1111/risa.13492",)
+                                        ],
                                     ),
                                 ],
                                 className=" twelve columns",
