@@ -34,7 +34,7 @@ def create_layout(app):
                                 [
                                     html.A(
                                         html.Button("Overview", id="learn-more-button"),
-                                        href="/overview",
+                                        href="/resilience-equity/",
                                     ),
                                 ],
                                 className="twelve columns",
