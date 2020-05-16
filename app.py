@@ -9,11 +9,12 @@ from pages import (
     equity,
     recover,
     transform,
+    comingsoon
 )
 
 app = dash.Dash(
     __name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}],
-    # url_base_pathname='/resilience-equity/',
+    url_base_pathname='/resilience-equity/',
 )
 server = app.server
 
@@ -35,6 +36,8 @@ def display_page(pathname):
         return recover.create_layout(app)
     elif pathname == "/transform":
         return transform.create_layout(app)
+    elif pathname == "/soon":
+        return comingsoon.create_layout(app)
     elif pathname == "/all":
         return (
             overview.create_layout(app),
@@ -48,5 +51,5 @@ def display_page(pathname):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
-    # app.run_server(port=9006)
+    # app.run_server(debug=True)
+    app.run_server(port=9006)
