@@ -124,6 +124,17 @@ def create_layout(app):
                                     planning."
                                     ],
                                     ),
+                                    html.H6(
+                                        ["Applicable throughout the hazard cycle"], className="subtitle padded"
+                                    ),
+                                    html.P(
+                                        ["\
+                                    Thinking about resilience in this way can be used to support decision-making throughout the hazard cycle."
+                                    ],
+                                    ),
+                                    html.Img(
+                                        src='./assets/hazard_cycle.png'
+                                    ),
                                 ],
                                 className="twelve columns",
                             ),
