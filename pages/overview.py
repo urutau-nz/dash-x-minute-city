@@ -35,7 +35,7 @@ def create_layout(app):
                                         ["\
                                     Resilience is occassionally criticized as being an undesirable property of a system\
                                     because some of the ways it is characterized can limit potential for transformation\
-                                    and even inadverently exacerbate inequality.\
+                                    and even, inadverently, exacerbate inequality.\
                                     In ",
                                     html.A("Logan & Guikema (2020)", href="https://onlinelibrary.wiley.com/doi/full/10.1111/risa.13492",
                                         style={'color':'white'}),

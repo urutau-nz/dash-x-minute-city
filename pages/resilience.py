@@ -316,15 +316,15 @@ def create_layout(app):
                                     ),
                                     html.A(
                                         html.Button("Measuring Equity", id="learn-more-button"),
-                                        href="./equity",
+                                        href="./soon",
                                     ),
                                     html.A(
                                         html.Button("Recover", id="learn-more-button"),
-                                        href="./recover",
+                                        href="./soon",
                                     ),
                                     html.A(
                                         html.Button("Transformation", id="learn-more-button"),
-                                        href="./transform",
+                                        href="./soon",
                                     ),
                                 ],
                                 className="twelve columns",
@@ -559,7 +559,7 @@ def create_layout(app):
                                     ),
                                     html.P(
                                         ["For more information and the reference list, see ",
-                                        html.A("Logan & Guikema (2020)", href="https://onlinelibrary.wiley.com/doi/full/10.1111/risa.13492",)
+                                        html.A("Logan & Guikema (2020).", href="https://onlinelibrary.wiley.com/doi/full/10.1111/risa.13492",)
                                         ],
                                     ),
                                 ],
