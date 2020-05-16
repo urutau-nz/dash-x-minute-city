@@ -132,8 +132,15 @@ def create_layout(app):
                                     Thinking about resilience in this way can be used to support decision-making throughout the hazard cycle."
                                     ],
                                     ),
+                                    html.Div(
+                                        [
                                     html.Img(
-                                        src='./assets/hazard_cycle.png'
+                                        src='./assets/hazard_cycle.png',
+                                        alt='How we can support at each stage of the hazard cycle',
+                                        width='70%'
+                                    ),
+                                    ],
+                                    style={"text-align": "center"},
                                     ),
                                 ],
                                 className="twelve columns",
