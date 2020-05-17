@@ -78,6 +78,7 @@ def generate_ecdf_plot(amenity_select, dff_dist, x_range=None):
         bargap=0.05,
         showlegend=False,
         margin=dict(l=40, r=0, t=10, b=30),
+        transition = {'duration': 500},
         # height= 300
 
     )
@@ -85,7 +86,7 @@ def generate_ecdf_plot(amenity_select, dff_dist, x_range=None):
     # add the cdf for that amenity
     counts, bin_edges = np.histogram(dff_dist.distance, bins=100, density = True)#, weights=df.W.values)
     dx = bin_edges[1] - bin_edges[0]
-    new_trace = go.Scattergl(
+    new_trace = go.Scatter(
             x=bin_edges, y=np.cumsum(counts)*dx*100,
             opacity=1,
             line=dict(color=colormap[amenity],),
@@ -117,7 +118,7 @@ def generate_ecdf_plot(amenity_select, dff_dist, x_range=None):
     dff_dist = df_dist[(df_dist.day==days[0]) & (df_dist.service==amenity)]
     counts, bin_edges = np.histogram(dff_dist.distance, bins=100, density = True)#, weights=df.W.values)
     dx = bin_edges[1] - bin_edges[0]
-    new_trace = go.Scattergl(
+    new_trace = go.Scatter(
             x=bin_edges, y=np.cumsum(counts)*dx*100,
             opacity=0.5,
             line=dict(color=colormap[amenity]),
@@ -164,11 +165,12 @@ def recovery_plot(amenity_select, dff_recovery, day):
 		plot_bgcolor = 'rgba(0,0,0,0)',
         showlegend=False,
         margin=dict(l=40, r=0, t=10, b=30),
+        transition = {'duration': 500},
     )
 
     data = []
     # add the average
-    new_trace = go.Scattergl(
+    new_trace = go.Scatter(
             x=dff_recovery.day, y=dff_recovery['average']/1000,
             opacity=1,
             line=dict(color=colormap[amenity],),
@@ -178,7 +180,7 @@ def recovery_plot(amenity_select, dff_recovery, day):
             )
     data.append(new_trace)
     # add the percentiles
-    new_trace = go.Scattergl(
+    new_trace = go.Scatter(
             x=dff_recovery.day, y=dff_recovery['p5']/1000,
             opacity=.50,
             line=dict(color=colormap[amenity],dash='dash'),
@@ -188,7 +190,7 @@ def recovery_plot(amenity_select, dff_recovery, day):
             )
     data.append(new_trace)
     # add the percentiles
-    new_trace = go.Scattergl(
+    new_trace = go.Scatter(
             x=dff_recovery.day, y=dff_recovery['p95']/1000,
             opacity=.50,
             line=dict(color=colormap[amenity],dash='dash'),
@@ -199,13 +201,14 @@ def recovery_plot(amenity_select, dff_recovery, day):
     data.append(new_trace)
 
     # add date line
-    new_trace = go.Scattergl(
+    new_trace = go.Scatter(
             x=[day, day],
             y=[0,ylimit+2],
             opacity=.50,
             mode='lines',
             line=dict(color='black',dash='dash'),
             hoverinfo="skip", hovertemplate="",
+            # transition = {'duration': 500},
             )
     data.append(new_trace)
 

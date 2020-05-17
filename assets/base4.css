@@ -22,11 +22,11 @@ body {
     color: white;
 }
 
-#ecdf, #recovery {
+#ecdf, #recovery, #food_ecdf, #food_ranking {
   width: 100%;
   height: 30vh;
 }
 
-#ecdf *, #recovery * {
+#ecdf *, #recovery *, #food_ecdf *, #food_ranking * {
         font-size: 1rem;
     }

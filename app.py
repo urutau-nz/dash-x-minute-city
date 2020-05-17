@@ -22,7 +22,7 @@ from pages import (
 
 app = dash.Dash(
     __name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}],
-    url_base_pathname='/resilience-equity/',
+    # url_base_pathname='/resilience-equity/',
 )
 server = app.server
 
@@ -172,6 +172,55 @@ def update_recovery(
 
     return resilience.recovery_plot(amenity_select, dff_recovery, day)
 
+#####
+# Equity
+#####
+# Load data
+df_dist_grocery = pd.read_csv('./data/supermarket_distance.csv')
+df_dist_grocery['distance'] = df_dist_grocery['distance']/1000
+df_dist_grocery['distance'] = df_dist_grocery['distance'].replace(np.inf, 999)
+
+df_rank = pd.read_csv('./data/ede_subgroups_-1.0.csv')
+df_rank = df_rank.pivot(index='city',columns='group',values='ede')
+# print(df_rank)
+
+# Update ecdf
+@app.callback(
+    Output("food_ecdf", "figure"),
+    [
+        Input("race-select", "value"),
+        Input("city-select", "value"),
+    ],
+)
+def update_ecdf(
+    race_select, cities_select
+    ):
+
+    # subset data
+    dff_dist = df_dist_grocery[df_dist_grocery['city'].isin(cities_select)][['city','distance']+race_select]
+
+    return equity.generate_ecdf_plot(dff_dist, race_select, cities_select)
+
+# Update ranking
+@app.callback(
+    Output("food_ranking", "figure"),
+    [
+        Input("race-select-2", "value"),
+        Input("race-order", "value"),
+    ],
+)
+def update_ecdf(
+    race_select, race_order
+    ):
+
+    # order
+    df_rank.sort_values(by=[race_order], inplace=True)
+
+    # subset data
+    dff_rank = df_rank[[i for i in race_select]]
+
+    return equity.generate_ranking_plot(dff_rank, race_select)
+
 
 
 
@@ -188,5 +237,5 @@ def update_recovery(
 
 
 if __name__ == "__main__":
-    # app.run_server(debug=True, port=9006)
-    app.run_server(port=9006)
+    app.run_server(debug=True)
+    # app.run_server(port=9006)
