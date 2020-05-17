@@ -40,6 +40,10 @@ def create_layout(app):
                                         html.Button("Resilience & Access", id="learn-more-button"),
                                         href="./resilience",
                                     ),
+                                    html.A(
+                                        html.Button("Measuring Equity", id="learn-more-button"),
+                                        href="./equity",
+                                    ),
                                 ],
                                 className="twelve columns",
                             ),
