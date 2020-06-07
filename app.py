@@ -12,23 +12,18 @@ import geopandas as gpd
 import datetime
 
 from pages import (
-    overview,
     resilience,
-    equity,
-    recover,
-    transform,
-    comingsoon
 )
 
 app = dash.Dash(
     __name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}],
-    url_base_pathname='/resilience-equity/',
+    url_base_pathname='/x-minute-city/',
 )
 server = app.server
 
 app.config.suppress_callback_exceptions = True
 
-app.title = 'Embedding equity into resilience'
+app.title = 'X-minute city'
 
 # Describe the layout/ UI of the app
 app.layout = html.Div(
@@ -39,26 +34,7 @@ app.layout = html.Div(
 @app.callback(Output("page-content", "children"),
                 [Input("url", "pathname")])
 def display_page(pathname):
-    if pathname == "/resilience-equity/resilience":
         return resilience.create_layout(app)
-    elif pathname == "/resilience-equity/equity":
-        return equity.create_layout(app)
-    elif pathname == "/resilience-equity/recover":
-        return recover.create_layout(app)
-    elif pathname == "/resilience-equity/transform":
-        return transform.create_layout(app)
-    elif pathname == "/resilience-equity/soon":
-        return comingsoon.create_layout(app)
-    elif pathname == "/resilience-equity/all":
-        return (
-            overview.create_layout(app),
-            resilience.create_layout(app),
-            equity.create_layout(app),
-            recover.create_layout(app),
-            transform.create_layout(app),
-        )
-    else:
-        return overview.create_layout(app)
 
 
 #####
@@ -68,31 +44,30 @@ def display_page(pathname):
 mapbox_access_token = open(".mapbox_token").read()
 
 # Load data
-df_dist = pd.read_csv('./data/distance_to_nearest.csv',dtype={"geoid10": str})
-df_dist['distance'] = df_dist['distance']/1000
-df_dist['distance'] = df_dist['distance'].replace(np.inf, 999)
+df_dist = pd.read_csv('./data/duration_ham.csv',dtype={"gid": str})
+df_dist['duration'] = df_dist['duration']/60
+df_dist['duration'] = df_dist['duration'].replace(np.inf, 999)
 
-destinations = pd.read_csv('./data/destinations.csv')
+destinations = pd.read_csv('./data/destinations_ham.csv')
 
-df_recovery_nc = pd.read_csv('./data/recovery_nc.csv')
 
 # Update access map
 @app.callback(
     Output("map", "figure"),
     [
         Input("amenity-select", "value"),
-        Input("day-select", "value"),
+        Input("mode-select", "value"),
+        Input("city-select", "value"),
         Input("ecdf", "selectedData"),
     ],
 )
 def update_map(
-    amenity_select, day, ecdf_selectedData
+    amenity_select, mode_select, city_select, ecdf_selectedData
 ):
     x_range = None
-    day = int(day)
     # subset the desination df
-    dff_dest = destinations[(destinations.dest_type==amenity_select) & (destinations['day']==day)]
-    dff_dist = df_dist[(df_dist['service']==amenity_select) & (df_dist['day']==day)]
+    dff_dest = destinations[(destinations.dest_type==amenity_select)]
+    dff_dist = df_dist[(df_dist['dest_type']==amenity_select) & (df_dist['mode']==mode_select)]
     # Find which one has been triggered
     ctx = dash.callback_context
 
@@ -110,7 +85,7 @@ def update_map(
             else:
                 x_range = [ecdf_selectedData['points'][0]['x']]*2
 
-    return resilience.generate_map(amenity_select, dff_dist, dff_dest, x_range=x_range)
+    return resilience.generate_map(amenity_select, dff_dist, dff_dest, mode_select, x_range=x_range)
 
 
 # Update ecdf
@@ -118,18 +93,19 @@ def update_map(
     Output("ecdf", "figure"),
     [
         Input("amenity-select", "value"),
-        Input("day-select", "value"),
+        Input("mode-select", "value"),
+        Input("city-select", "value"),
         Input("ecdf", "selectedData"),
     ],
 )
 def update_ecdf(
-    amenity_select, day, ecdf_selectedData
+    amenity_select, mode_select, city_select, ecdf_selectedData
     ):
     x_range = None
     # day = int(day)
 
     # subset data
-    dff_dist = df_dist[(df_dist['service']==amenity_select) & (df_dist['day']==day)]
+    dff_dist = df_dist[(df_dist['dest_type']==amenity_select) & (df_dist['mode']==mode_select)]
 
     # Find which one has been triggered
     ctx = dash.callback_context
@@ -148,106 +124,7 @@ def update_ecdf(
             else:
                 x_range = [ecdf_selectedData['points'][0]['x']]*2
 
-    return resilience.generate_ecdf_plot(amenity_select, dff_dist, x_range)
-
-# Update ecdf
-@app.callback(
-    Output("recovery", "figure"),
-    [
-        Input("amenity-select", "value"),
-        Input("day-select", "value"),
-    ],
-)
-def update_recovery(
-    amenity_select, day
-    ):
-    x_range = None
-    day = int(day)
-
-    # subset data
-    dff_recovery = df_recovery_nc[(df_recovery_nc['service']==amenity_select)]
-
-    return resilience.recovery_plot(amenity_select, dff_recovery, day)
-
-#####
-# Equity
-#####
-# Load data
-df_dist_grocery = pd.read_csv('./data/supermarket_distance.csv')
-df_dist_grocery['distance'] = df_dist_grocery['distance']/1000
-df_dist_grocery['distance'] = df_dist_grocery['distance'].replace(np.inf, 999)
-
-df_rank = pd.read_csv('./data/ede_subgroups_-1.0.csv')
-df_rank = df_rank.pivot(index='city',columns='group',values='ede')
-# print(df_rank)
-
-# Update ecdf
-@app.callback(
-    Output("food_ecdf", "figure"),
-    [
-        Input("race-select", "value"),
-        Input("city-select", "value"),
-    ],
-)
-def update_ecdf(
-    race_select, cities_select
-    ):
-
-    # subset data
-    dff_dist = df_dist_grocery[df_dist_grocery['city'].isin(cities_select)][['city','distance']+race_select]
-
-    return equity.generate_ecdf_plot(dff_dist, race_select, cities_select)
-
-# Update ranking
-@app.callback(
-    Output("food_ranking", "figure"),
-    [
-        Input("race-select-2", "value"),
-        Input("race-order", "value"),
-    ],
-)
-def update_ecdf(
-    race_select, race_order
-    ):
-
-    # order
-    df_rank.sort_values(by=[race_order], inplace=True)
-
-    # subset data
-    dff_rank = df_rank[[i for i in race_select]]
-
-    return equity.generate_ranking_plot(dff_rank, race_select)
-
-
-#####
-# recovery
-#####
-df_recovery = pd.read_csv('./data/recovery_md.csv')
-# Update recovery
-@app.callback(
-    Output("recovery-md", "figure"),
-    [
-        Input("simulation-select", "value"),
-        Input("metric-select", "value"),
-        Input("group-select", "value"),
-    ],
-)
-def update_ecdf(
-    sim_ids, metrics, groups
-    ):
-    sim_ids = [int(i)-1 for i in sim_ids]
-    access_metrics=['{}_{}'.format(x,y) for x in metrics for y in groups]
-    recovery_metrics=[1,2,6]
-
-    # subset
-    dff_recovery = df_recovery[
-                    (df_recovery.sim_id.isin(sim_ids)) &
-                    (df_recovery.recovery_metric.isin(recovery_metrics)) &
-                    (df_recovery.access_metric.isin(access_metrics))
-                    ]
-
-    return recover.plot_recovery(dff_recovery)
-
+    return resilience.generate_ecdf_plot(amenity_select, dff_dist, mode_select, x_range)
 
 
 
@@ -256,4 +133,4 @@ def update_ecdf(
 
 if __name__ == "__main__":
     # app.run_server(debug=True)
-    app.run_server(port=9006)
+    app.run_server(port=9007)

@@ -27,7 +27,7 @@ def get_header(app):
             html.Div(
                 [
                     html.Div(
-                        [html.H5("Embedding equity into community resilience through data-driven urban planning")],
+                        [html.H5("The X-minute city")],
                         className="nine columns main-title",
                     ),
                     # html.Div(
