@@ -65,10 +65,6 @@ def update_map(
     amenity_select, mode_select, city_select, ecdf_selectedData
 ):
     x_range = None
-    if city_select == 'hamilton':
-        coord = [-37.786110, 175.277281]
-    else:
-        coord = [-43.529975, 172.619671]
     # subset the desination df
     dff_dest = destinations[(destinations.dest_type==amenity_select) & (destinations.city==city_select)]
     dff_dist = df_dist[(df_dist['dest_type']==amenity_select) & (df_dist['mode']==mode_select) & (df_dist.city==city_select)]
@@ -89,7 +85,7 @@ def update_map(
             else:
                 x_range = [ecdf_selectedData['points'][0]['x']]*2
 
-    return resilience.generate_map(amenity_select, dff_dist, dff_dest, mode_select, coord, x_range=x_range)
+    return resilience.generate_map(amenity_select, dff_dist, dff_dest, mode_select, city_select, x_range=x_range)
 
 
 # Update ecdf

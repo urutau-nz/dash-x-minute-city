@@ -117,7 +117,7 @@ def generate_ecdf_plot(amenity_select, dff_dist,mode_select, x_range=None):
     return {"data": data, "layout": layout}
 
 
-def generate_map(amenity, dff_dist, dff_dest, mode_select, coord, x_range=None):
+def generate_map(amenity, dff_dist, dff_dest, mode_select, city_select, x_range=None):
     """
     Generate map showing the duration to services and the locations of them
     :param amenity: the service of interest.
@@ -126,6 +126,16 @@ def generate_map(amenity, dff_dist, dff_dest, mode_select, coord, x_range=None):
     :return: Plotly figure object.
     """
     dff_dist = dff_dist.reset_index()
+
+    if city_select == 'hamilton':
+        coord = [-37.786110, 175.277281]
+        block_data = 'https://raw.githubusercontent.com/urutau-nz/x_minute_city/master/data/block_ham.geojson'
+    else:
+        coord = [-43.529975, 172.619671]
+        block_data = 'https://raw.githubusercontent.com/urutau-nz/x_minute_city/master/data/block_ham.geojson'
+
+    # block data
+
 
     layout = go.Layout(
         clickmode="none",
@@ -162,7 +172,7 @@ def generate_map(amenity, dff_dist, dff_dest, mode_select, coord, x_range=None):
     data = []
     # choropleth map showing the duration at the block level
     data.append(go.Choroplethmapbox(
-        geojson = 'https://raw.githubusercontent.com/urutau-nz/x_minute_city/master/data/block_ham.geojson',
+        geojson = block_data,
         locations = dff_dist['id_orig'].tolist(),
         z = dff_dist['duration'].tolist(),
         colorscale = pl_deep,
