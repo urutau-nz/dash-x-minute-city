@@ -44,11 +44,11 @@ def display_page(pathname):
 mapbox_access_token = open(".mapbox_token").read()
 
 # Load data
-df_dist = pd.read_csv('./data/duration_ham.csv',dtype={"gid": str})
+df_dist = pd.read_csv('./data/duration.csv',dtype={"gid": str})
 df_dist['duration'] = df_dist['duration']/60
 df_dist['duration'] = df_dist['duration'].replace(np.inf, 999)
 
-destinations = pd.read_csv('./data/destinations_ham.csv')
+destinations = pd.read_csv('./data/destinations.csv')
 
 
 # Update access map
@@ -65,9 +65,13 @@ def update_map(
     amenity_select, mode_select, city_select, ecdf_selectedData
 ):
     x_range = None
+    if city_select == 'hamilton':
+        coord = [-37.786110, 175.277281]
+    else:
+        coord = [-43.529975, 172.619671]
     # subset the desination df
-    dff_dest = destinations[(destinations.dest_type==amenity_select)]
-    dff_dist = df_dist[(df_dist['dest_type']==amenity_select) & (df_dist['mode']==mode_select)]
+    dff_dest = destinations[(destinations.dest_type==amenity_select) & (destinations.city==city_select)]
+    dff_dist = df_dist[(df_dist['dest_type']==amenity_select) & (df_dist['mode']==mode_select) & (df_dist.city==city_select)]
     # Find which one has been triggered
     ctx = dash.callback_context
 
@@ -85,7 +89,7 @@ def update_map(
             else:
                 x_range = [ecdf_selectedData['points'][0]['x']]*2
 
-    return resilience.generate_map(amenity_select, dff_dist, dff_dest, mode_select, x_range=x_range)
+    return resilience.generate_map(amenity_select, dff_dist, dff_dest, mode_select, coord, x_range=x_range)
 
 
 # Update ecdf
@@ -105,7 +109,7 @@ def update_ecdf(
     # day = int(day)
 
     # subset data
-    dff_dist = df_dist[(df_dist['dest_type']==amenity_select) & (df_dist['mode']==mode_select)]
+    dff_dist = df_dist[(df_dist['dest_type']==amenity_select) & (df_dist['mode']==mode_select) & (df_dist.city==city_select)]
 
     # Find which one has been triggered
     ctx = dash.callback_context

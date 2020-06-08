@@ -15,13 +15,13 @@ import datetime
 mapbox_access_token = open(".mapbox_token").read()
 
 # Load data
-df_dist = pd.read_csv('./data/duration_ham.csv',dtype={"gid": str})
+df_dist = pd.read_csv('./data/duration.csv',dtype={"gid": str})
 df_dist['duration'] = df_dist['duration']/60
 df_dist['duration'] = df_dist['duration'].replace(np.inf, 999)
 
 amenities = np.unique(df_dist.dest_type)
 
-destinations = pd.read_csv('./data/destinations_ham.csv')
+destinations = pd.read_csv('./data/destinations.csv')
 
 mode_dict = {'walking':'walk','cycling':'bike'}
 
@@ -117,7 +117,7 @@ def generate_ecdf_plot(amenity_select, dff_dist,mode_select, x_range=None):
     return {"data": data, "layout": layout}
 
 
-def generate_map(amenity, dff_dist, dff_dest, mode_select, x_range=None):
+def generate_map(amenity, dff_dist, dff_dest, mode_select, coord, x_range=None):
     """
     Generate map showing the duration to services and the locations of them
     :param amenity: the service of interest.
@@ -126,8 +126,6 @@ def generate_map(amenity, dff_dist, dff_dest, mode_select, x_range=None):
     :return: Plotly figure object.
     """
     dff_dist = dff_dist.reset_index()
-
-    coord = [-37.786110, 175.277281]
 
     layout = go.Layout(
         clickmode="none",
@@ -238,10 +236,10 @@ def create_layout(app):
                                     dcc.RadioItems(
                                         id="city-select",
                                         options=[
-                                            {"label": i, "value": i}
+                                            {"label": i, "value": i.lower()}
                                             for i in ['Christchurch','Hamilton']
                                         ],
-                                        value='Hamilton',
+                                        value='hamilton',
                                         labelStyle={'display': 'inline-block'},
                                     ),
                                 ],
