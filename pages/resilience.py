@@ -23,6 +23,8 @@ amenities = np.unique(df_dist.dest_type)
 
 destinations = pd.read_csv('./data/destinations_ham.csv')
 
+mode_dict = {'walking':'walk','cycling':'bike'}
+
 # Assign color to legend
 colors = ['#008fd5', '#fc4f30', '#e5ae38', '#6d904f', '#8b8b8b', '#810f7c']
 colormap = {}
@@ -56,7 +58,7 @@ def generate_ecdf_plot(amenity_select, dff_dist,mode_select, x_range=None):
         xaxis=dict(
             title="duration (min)".upper(),
             range=(0,60),
-            fixedrange=True,
+            # fixedrange=True,
             titlefont=dict(size=12)
             ),
         yaxis=dict(
@@ -73,6 +75,7 @@ def generate_ecdf_plot(amenity_select, dff_dist,mode_select, x_range=None):
         showlegend=False,
         margin=dict(l=40, r=0, t=10, b=30),
         transition = {'duration': 500},
+        hovermode="closest",
         # height= 300
     )
     data = []
@@ -83,8 +86,8 @@ def generate_ecdf_plot(amenity_select, dff_dist,mode_select, x_range=None):
             x=bin_edges, y=np.cumsum(counts)*dx*100,
             opacity=1,
             line=dict(color=colormap[amenity],),
-            customdata=[amenity.lower()]*len(dff_dist),
-            text=[mode_select[:-3]]*len(dff_dist),
+            customdata=[amenity.lower().replace('_',' ')]*len(dff_dist),
+            text=[mode_dict[mode_select]]*len(dff_dist),
             hovertemplate = "%{y:.0f}% of residents live within %{x:.1f}min %{text} of a %{customdata} <br>" + "<extra></extra>",
             hoverlabel = dict(font_size=20),
             )
@@ -92,8 +95,8 @@ def generate_ecdf_plot(amenity_select, dff_dist,mode_select, x_range=None):
     data.append(new_trace)
 
     # histogram
-    multiplier = 300 if amenity=='supermarket' else 150
     counts, bin_edges = np.histogram(dff_dist.duration, bins=25, density=True)#, weights=df.W.values)
+    multiplier = 60/np.max(counts) # 300 if amenity=='supermarket' else 150
     opacity = []
     for i in bin_edges:
         if i >= x_range[0] and i <= x_range[1]:
@@ -168,7 +171,7 @@ def generate_map(amenity, dff_dist, dff_dest, mode_select, x_range=None):
         colorbar = dict(thickness=20, ticklen=3), zmin=0, zmax=60,
         marker_line_width=0, marker_opacity=0.7,
         visible=True,
-        text =[mode_select]*len(dff_dist),
+        text =[mode_dict[mode_select]]*len(dff_dist),
         hovertemplate="%{z:.1f}min %{text} <br>" +
                         "<extra></extra>",
         selectedpoints=idx,
@@ -179,7 +182,7 @@ def generate_map(amenity, dff_dist, dff_dest, mode_select, x_range=None):
         lon=dff_dest["lon"],
         mode="markers",
         marker={"color": [colormap[amenity]]*len(dff_dest), "size": 9},
-        name=amenity,
+        name=amenity.replace('_',' '),
         hoverinfo="skip", hovertemplate="",
     ))
 
@@ -201,37 +204,18 @@ def create_layout(app):
                                 [
                                     dcc.Markdown(
                                         ['''
-                                    In [Logan & Guikema (2020)](https://onlinelibrary.wiley.com/doi/full/10.1111/risa.13492)
-                                    we made the case for ''access to essential services'' being considered as a
-                                    pillar of community resilience.
-                                    '''],
-                                    ),
-                                    html.H6(
-                                        ["Everyday services"], className="subtitle padded"
-                                    ),
-                                    dcc.Markdown(
-                                        ['''
-                                    The geography literature tells us that community cohesion, the generation of social
-                                    capital, and community sustainability is fostered by access to opportunities
-                                    and resources: specifically equitable access to those opportunities (Dempsey, 2011).
-                                    These everyday amenities include water, power, sanitation, and communications, but communities also require
-                                    access to food, education, and health care (Winter, 1997).
-                                    (While access includes dimensions of availability, acceptability, afforability, adequacy, and awareness (Penchasky 1981; Saurman 2016),
-                                    we begin by considering proximity.)
-                                    '''],
-                                    ),
-                                    html.H6(
-                                        ["Community capacity"], className="subtitle padded"
-                                    ),
-                                    dcc.Markdown(
-                                        ['''
-                                    Common to the many definitions of resilience is community capacity to anticipate, prepare, absorb,
-                                    adapt, and transform.
-                                    To develop these capacities, a community needs cohesion and social capital.
-                                    It is therefore necessary to ensure there is equitable access to essential services.
-                                    We have seen that communities without access to everyday services will simply collapse (Contreras, 2017).
-                                    That is, a community without resources and the trust that arises from equitable opportunities, will struggle
-                                    to develop the capacities identified as providing the foundation of resilience.
+                                    Access to things in your community has a huge range of benefits. Grocery stores help people eat better,
+                                    easy access to primary schools means parents don't have the stress of the school commute and instead have
+                                    a little extra time for themselves or to spend with friends.
+
+                                    Accessible communities enhance local economies, improve physical and mental health, and strengthen the communities
+                                    resilience.
+
+                                    Some of our cities are hoping that they can use the economic stimulus to reinvent their cities and connect people
+                                    again. The shovel-ready project funding should prepare our communities for the 21st century. An accessible city is
+                                    a 21st century city.
+
+                                    This is our initial investigation into the accessibility of some of our communities.
                                     '''],
                                     ),
                                 ],
@@ -247,60 +231,65 @@ def create_layout(app):
                                 [
                                     html.H6(
                                         [
-                                            "Example of Wilmington, NC and Hurricane Florence"
+                                            "Pick your city"
                                         ],
                                         className="subtitle padded",
                                     ),
-                                    html.P(
-                                        ["\
-                                    Below is an interactive example of assessing access over\
-                                    the course of a hurricane. The map enables you to explore\
-                                    how access is spatially distributed. You can highlight areas of\
-                                    deprivation by dragging to select a range of values on the histogram.\
-                                    The resilience curve shows how quickly access was restored; the resilience\
-                                    curve includes the 5th and 95th percentiles so that we don't\
-                                    ignore the people who are worst-off.\
-                                    In the next page, we propose an alternative way to capture these\
-                                    people."
-                                    ],
-                                    ),
-                                    html.Div(
-                                        [
-                                            dcc.RadioItems(
-                                                id="city-select",
-                                                options=[
-                                                    {"label": i, "value": i}
-                                                    for i in ['Christchurch','Hamilton']
-                                                ],
-                                                value='Hamilton',
-                                                labelStyle={'display': 'inline-block'},
-                                            ),
+                                    dcc.RadioItems(
+                                        id="city-select",
+                                        options=[
+                                            {"label": i, "value": i}
+                                            for i in ['Christchurch','Hamilton']
                                         ],
-                                        # style={"overflow-x": "auto"},
+                                        value='Hamilton',
+                                        labelStyle={'display': 'inline-block'},
                                     ),
-                                    html.Div(
+                                ],
+                                className=" six columns",
+                            ),
+                            html.Div(
+                                [
+                                    html.H6(
                                         [
-                                            dcc.RadioItems(
-                                                id="mode-select",
-                                                options=[
-                                                    {"label": i, "value": i.lower()}
-                                                    for i in ['Walking','Cycling']
-                                                ],
-                                                value='walking',
-                                                labelStyle={'display': 'inline-block'},
-                                            ),
+                                            "Pick your transport mode"
                                         ],
-                                        # style={"overflow-x": "auto"},
+                                        className="subtitle padded",
+                                    ),
+                                    dcc.RadioItems(
+                                        id="mode-select",
+                                        options=[
+                                            {"label": i, "value": i.lower()}
+                                            for i in ['Walking','Cycling']
+                                        ],
+                                        value='walking',
+                                        labelStyle={'display': 'inline-block'},
+                                    ),
+                                ],
+                                className=" six columns",
+                            ),
+                        ],
+                        className="row ",
+                    ),
+                    # Row 4
+                    html.Div(
+                        [
+                            html.Div(
+                                [
+                                    html.H6(
+                                        [
+                                            "Pick your destination"
+                                        ],
+                                        className="subtitle padded",
                                     ),
                                     html.Div(
                                         [
                                             dcc.Dropdown(
                                                 id="amenity-select",
                                                 options=[
-                                                    {"label": i.upper(), "value": i}
+                                                    {"label": i.upper().replace('_',' '), "value": i}
                                                     for i in amenities
                                                 ],
-                                                value=amenities[0],
+                                                value=amenities[4],
                                             ),
                                         ],
                                         # style={"overflow-x": "auto"},
@@ -318,7 +307,7 @@ def create_layout(app):
 
                                 id="map-container",
                                     children=[
-                                        html.H6("What is the state of people's access to services?"),
+                                        html.H6("This map shows how long it would take for people to get to their nearest amenity."),
                                         dcc.Graph(
                                             id="map",
                                             figure={
@@ -341,7 +330,7 @@ def create_layout(app):
                             html.Div(
                                 id="ecdf-container",
                                 children=[
-                                    html.H6("Select a duration range to identify those areas"),
+                                    html.H6("This graph shows what percentage of people live within a certain travel time of that amenity. The bars are a histogram. To explore where the people with the worst access are, you can select a range on this graph and it will highlight it in the map."),
                                     dcc.Graph(id="ecdf",
                                     config={"scrollZoom": True, "displayModeBar": True,
                                             "modeBarButtonsToRemove":['toggleSpikelines','hoverCompareCartesian',
