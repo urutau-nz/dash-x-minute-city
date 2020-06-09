@@ -1,4 +1,4 @@
-,id,dest_type,Name,lon,lat,city
+,id,dest_type,name,lon,lat,city
 0,0,supermarket,Pak'nSave Clarence St,175.2827800170001,-37.79556360299995,hamilton
 1,1,supermarket,Countdown St James,175.273060641,-37.73246954899997,hamilton
 2,2,supermarket,New World Rototuna,175.2742562350001,-37.72807727299994,hamilton
@@ -11,30 +11,63 @@
 9,9,supermarket,NewSave,175.2758916160001,-37.78636178799997,hamilton
 10,10,supermarket,Countdown,175.2738673780001,-37.78230141599994,hamilton
 11,11,supermarket,Four Square Heaphy Terrace,175.2830589550001,-37.77119806799993,hamilton
-12,14,supermarket,New World Te Rapa,175.239712884,-37.75330461999994,hamilton
-13,15,supermarket,Countdown Claudelands,175.2992442770001,-37.77850884399993,hamilton
-14,16,supermarket,New World,175.2875661100001,-37.82271589399994,hamilton
-15,17,supermarket,Countdown,175.278755,-37.75011809999995,hamilton
-16,20,supermarket,Super Value Supermarket,175.2528349,-37.73817549999995,hamilton
-17,21,supermarket,SuperValue Borman Village,175.2419288000001,-37.71943479999993,hamilton
-18,22,police_station,Hamilton Central Police Station,175.2877367360001,-37.79296419099995,hamilton
-19,23,police_station,Hamilton East Police Station,175.3072688760001,-37.78993508299993,hamilton
-20,24,police_station,West Hamilton Community Policing Centre,175.24533037,-37.79484133099993,hamilton
-21,25,police_station,Hamilton North Community Poilce Station,175.2539897,-37.73831709999996,hamilton
-22,26,hospital,Waikato Hospital,175.2828548420001,-37.80515369899996,hamilton
-23,27,hospital,Hospice Waikato,175.3168419780001,-37.80316840599994,hamilton
-24,29,hospital,Saint Joans Hospital,175.2890534260001,-37.76539822199993,hamilton
-25,30,hospital,Southern Cross Hospital,175.2903718790001,-37.78914619599993,hamilton
-26,33,hospital,Braemar Hospital,175.2790718680001,-37.80788878899995,hamilton
-27,35,fire_station,Hamilton Fire Station,175.2826236860001,-37.79106587999996,hamilton
-28,36,fire_station,Chartwell Fire Station,175.288885476,-37.75481749699998,hamilton
-29,37,fire_station,Te Rapa Fire Station,175.2284489000001,-37.75289979999997,hamilton
-30,38,library,Central Library,175.2825469160001,-37.78812139399997,hamilton
-31,39,library,Glenview LIbrary,175.2878652800001,-37.82294537899998,hamilton
-32,40,library,St Andrews Library,175.2585611000001,-37.75775459999994,hamilton
-33,41,library,Chartwell Library,175.278308086,-37.75155206899996,hamilton
-34,42,library,"Education Library, University of Waikato",175.3199909000001,-37.78620909999995,hamilton
-35,43,library,Hillcrest Library,175.3204202000001,-37.79536419999994,hamilton
-36,44,library,Dinsdale Library,175.2460800000001,-37.79450389999994,hamilton
-37,45,library,Wendell B Mendenhall Library,175.2274834000001,-37.82082119999995,hamilton
-38,46,library,Campus Library,175.3177915000001,-37.78749649999997,hamilton
+12,12,supermarket,New World Te Rapa,175.239712884,-37.75330461999994,hamilton
+13,13,supermarket,Countdown Claudelands,175.2992442770001,-37.77850884399993,hamilton
+14,14,supermarket,New World,175.2875661100001,-37.82271589399994,hamilton
+15,15,supermarket,Countdown,175.278755,-37.75011809999995,hamilton
+16,16,supermarket,Super Value Supermarket,175.2528349,-37.73817549999995,hamilton
+17,17,supermarket,SuperValue Borman Village,175.2419288000001,-37.71943479999993,hamilton
+18,18,police_station,Hamilton Central Police Station,175.2877367360001,-37.79296419099995,hamilton
+19,19,police_station,Hamilton East Police Station,175.3072688760001,-37.78993508299993,hamilton
+20,20,police_station,West Hamilton Community Policing Centre,175.24533037,-37.79484133099993,hamilton
+21,21,police_station,Hamilton North Community Poilce Station,175.2539897,-37.73831709999996,hamilton
+22,22,hospital,Waikato Hospital,175.2828548420001,-37.80515369899996,hamilton
+23,23,hospital,Hospice Waikato,175.3168419780001,-37.80316840599994,hamilton
+24,24,hospital,Saint Joans Hospital,175.2890534260001,-37.76539822199993,hamilton
+25,25,hospital,Southern Cross Hospital,175.2903718790001,-37.78914619599993,hamilton
+26,26,hospital,Braemar Hospital,175.2790718680001,-37.80788878899995,hamilton
+27,27,fire_station,Hamilton Fire Station,175.2826236860001,-37.79106587999996,hamilton
+28,28,fire_station,Chartwell Fire Station,175.288885476,-37.75481749699998,hamilton
+29,29,fire_station,Te Rapa Fire Station,175.2284489000001,-37.75289979999997,hamilton
+30,30,library,Central Library,175.2825469160001,-37.78812139399997,hamilton
+31,31,library,Glenview LIbrary,175.2878652800001,-37.82294537899998,hamilton
+32,32,library,St Andrews Library,175.2585611000001,-37.75775459999994,hamilton
+33,33,library,Chartwell Library,175.278308086,-37.75155206899996,hamilton
+34,34,library,"Education Library, University of Waikato",175.3199909000001,-37.78620909999995,hamilton
+35,35,library,Hillcrest Library,175.3204202000001,-37.79536419999994,hamilton
+36,36,library,Dinsdale Library,175.2460800000001,-37.79450389999994,hamilton
+37,37,library,Wendell B Mendenhall Library,175.2274834000001,-37.82082119999995,hamilton
+38,38,library,Campus Library,175.3177915000001,-37.78749649999997,hamilton
+39,39,clinic,Hamilton East Medical Centre,175.292912912,-37.78958412899993,hamilton
+40,40,clinic,Redicare Medical Centre,175.2733564670001,-37.78358823299993,hamilton
+41,41,clinic,Victoria Clinic,175.2787561560001,-37.78203732499998,hamilton
+42,42,clinic,Tui Medical,175.2870699000001,-37.76173489999996,hamilton
+43,43,clinic,Anglesea Clinic Accident & Medical,175.2833056000001,-37.79236319999995,hamilton
+44,44,clinic,Hamilton Lake Clinic,175.2810695000001,-37.79611739999996,hamilton
+45,45,clinic,Dinsdale Medical Centre,175.2469561,-37.79541479999995,hamilton
+46,46,clinic,Masters Medical Clinic,175.3202249010001,-37.79561539899998,hamilton
+47,47,clinic,Five Cross Roads Medical Centre,175.2925602380001,-37.77122473499998,hamilton
+48,48,clinic,Fairfield Medical Centre,175.2825406000001,-37.77134539999997,hamilton
+49,49,clinic,South City Health,175.2713546450001,-37.80868218799998,hamilton
+50,50,clinic,Glenview Medical Centre,175.2829175730001,-37.81683204399997,hamilton
+51,51,clinic,Parkwood Medical Centre,175.2940869500001,-37.74920334999996,hamilton
+52,52,clinic,Tui Medical Centre,175.2746593000001,-37.72926649999994,hamilton
+53,53,clinic,Flagstaff Medical Centre,175.2545393,-37.73869949999994,hamilton
+54,54,clinic,Hillcrest Medical Centre,175.316454,-37.79895339999996,hamilton
+55,55,clinic,River Road Family Practice,175.2704136000001,-37.77018039999996,hamilton
+56,56,clinic,Westend Health Centre,175.2468805000001,-37.79660329999996,hamilton
+57,57,clinic,Tui Medical,175.2466455000001,-37.75768179999994,hamilton
+58,58,primary_school,TKKM o Toku Mapihi Maurea,175.324237,-37.788582,hamilton
+59,59,primary_school,TKKM o Te Ara Rima,175.29569,-37.771217,hamilton
+60,60,primary_school,Hamilton West School,175.2833,-37.798955,hamilton
+61,61,primary_school,Rhode Street School,175.251791,-37.799051,hamilton
+62,62,primary_school,St Columba's Catholic School (Frankton),175.250882,-37.786756,hamilton
+63,63,primary_school,St Joseph's Catholic School (Fairfield),175.274387,-37.76668,hamilton
+64,64,primary_school,St Peter Chanel Catholic School (Te Rapa),175.253234,-37.764273,hamilton
+65,65,primary_school,St Pius X Catholic School (Melville),175.288082,-37.813154,hamilton
+66,66,primary_school,Te Rapa School,175.236039,-37.739391,hamilton
+67,67,primary_school,Whitiora School,175.270037,-37.779587,hamilton
+68,68,primary_school,Marian Catholic School (Hamilton),175.295006,-37.790836,hamilton
+69,69,primary_school,Crawshaw School,175.232277,-37.773937,hamilton
+70,70,primary_school,Southwell School,175.297034,-37.774857,hamilton
+71,71,downtown,downtown,175.2793,-37.787,hamilton
