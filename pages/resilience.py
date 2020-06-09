@@ -129,10 +129,10 @@ def generate_map(amenity, dff_dist, dff_dest, mode_select, city_select, x_range=
 
     if city_select == 'hamilton':
         coord = [-37.786110, 175.277281]
-        block_data = 'https://raw.githubusercontent.com/urutau-nz/x_minute_city/master/data/block_ham.geojson'
+        block_data = 'https://raw.githubusercontent.com/urutau-nz/dash-x-minute-city/master/data/block_ham.geojson'
     else:
         coord = [-43.529975, 172.619671]
-        block_data = 'https://raw.githubusercontent.com/urutau-nz/x_minute_city/master/data/block_chc.geojson'
+        block_data = 'https://raw.githubusercontent.com/urutau-nz/dash-x-minute-city/master/data/block_chc.geojson'
 
     # block data
 
