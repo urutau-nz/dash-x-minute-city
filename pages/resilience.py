@@ -132,7 +132,7 @@ def generate_map(amenity, dff_dist, dff_dest, mode_select, city_select, x_range=
         block_data = 'https://raw.githubusercontent.com/urutau-nz/x_minute_city/master/data/block_ham.geojson'
     else:
         coord = [-43.529975, 172.619671]
-        block_data = 'https://raw.githubusercontent.com/urutau-nz/x_minute_city/master/data/block_ham.geojson'
+        block_data = 'https://raw.githubusercontent.com/urutau-nz/x_minute_city/master/data/block_chc.geojson'
 
     # block data
 
@@ -297,7 +297,7 @@ def create_layout(app):
                                                     {"label": i.upper().replace('_',' '), "value": i}
                                                     for i in amenities
                                                 ],
-                                                value=amenities[7],
+                                                value=amenities[8],
                                             ),
                                         ],
                                         # style={"overflow-x": "auto"},
