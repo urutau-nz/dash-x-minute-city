@@ -297,7 +297,7 @@ def create_layout(app):
                                                     {"label": i.upper().replace('_',' '), "value": i}
                                                     for i in amenities
                                                 ],
-                                                value=amenities[4],
+                                                value=amenities[7],
                                             ),
                                         ],
                                         # style={"overflow-x": "auto"},
