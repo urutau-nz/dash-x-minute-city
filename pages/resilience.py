@@ -23,7 +23,7 @@ amenities = np.unique(df_dist.dest_type)
 
 destinations = pd.read_csv('./data/destinations.csv')
 
-mode_dict = {'walking':'walk','cycling':'bike'}
+mode_dict = {'walking':'walk','cycling':'bike','driving':'drive'}
 
 # Assign color to legend
 colors = ['#008fd5']*len(amenities)#, '#fc4f30', '#e5ae38', '#6d904f', '#8b8b8b', '#810f7c']
@@ -267,7 +267,7 @@ def create_layout(app):
                                         id="mode-select",
                                         options=[
                                             {"label": i, "value": i.lower()}
-                                            for i in ['Walking','Cycling']
+                                            for i in ['Walking','Cycling', 'Driving']
                                         ],
                                         value='walking',
                                         labelStyle={'display': 'inline-block'},
