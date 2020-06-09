@@ -26,7 +26,7 @@ destinations = pd.read_csv('./data/destinations.csv')
 mode_dict = {'walking':'walk','cycling':'bike'}
 
 # Assign color to legend
-colors = ['#008fd5', '#fc4f30', '#e5ae38', '#6d904f', '#8b8b8b', '#810f7c']
+colors = ['#008fd5']*len(amenities)#, '#fc4f30', '#e5ae38', '#6d904f', '#8b8b8b', '#810f7c']
 colormap = {}
 for ind, amenity in enumerate(amenities):
     colormap[amenity] = colors[ind]
