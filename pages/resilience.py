@@ -365,7 +365,8 @@ def create_layout(app):
                                     The approach to measure proximity is outlined in [Logan et al. (2019)](https://journals.sagepub.com/doi/abs/10.1177/2399808317736528).
                                     This has been recently used to evaluate community resilience ([Logan & Guikema, 2020](https://onlinelibrary.wiley.com/doi/abs/10.1111/risa.13492))
                                     and equitable access to green spaces ([Williams et al., 2020](https://www.sciencedirect.com/science/article/pii/S0169204619304116)).
-                                    '''],
+
+                                    Thank you to [Michael Freeman](https://www.linkedin.com/in/michael-freeman-b14a601a0/) for his coding assistance on this project.'''],
                                     ),
                                 ],
                                 className=" twelve columns",
